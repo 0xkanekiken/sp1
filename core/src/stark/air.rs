@@ -97,7 +97,7 @@ pub enum RiscvAir<F: PrimeField32> {
 
     /// A precompile for addition on the Elliptic curve bn254.
     Bn254Add(WeierstrassAddAssignChip<SwCurve<Bn254Parameters>>),
-    /// A precompile for doubling a point on the Elliptic curve secp256r1.
+    /// A precompile for doubling a point on the Elliptic curve Bn254.
     Bn254Double(WeierstrassDoubleAssignChip<SwCurve<Bn254Parameters>>),
 }
 

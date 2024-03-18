@@ -85,6 +85,8 @@ pub trait EllipticCurveParameters:
     Debug + Send + Sync + Copy + Serialize + DeserializeOwned + 'static
 {
     type BaseField: FieldParameters;
+
+    const NAME: &'static str = "ed25519";
 }
 
 /// An interface for elliptic curve groups.

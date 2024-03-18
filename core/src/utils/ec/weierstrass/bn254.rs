@@ -2,6 +2,7 @@ use num::{BigUint, Num, Zero};
 use serde::{Deserialize, Serialize};
 
 use super::{SwCurve, WeierstrassParameters};
+use crate::operations::field::params::{NB_BITS_PER_LIMB, NUM_LIMBS};
 use crate::utils::ec::field::{FieldParameters, MAX_NB_LIMBS};
 use crate::utils::ec::EllipticCurveParameters;
 
@@ -16,9 +17,9 @@ pub type Bn254 = SwCurve<Bn254Parameters>;
 pub struct Bn254BaseField;
 
 impl FieldParameters for Bn254BaseField {
-    const NB_BITS_PER_LIMB: usize = 16;
+    const NB_BITS_PER_LIMB: usize = NB_BITS_PER_LIMB;
 
-    const NB_LIMBS: usize = 16;
+    const NB_LIMBS: usize = NUM_LIMBS;
 
     const NB_WITNESS_LIMBS: usize = 2 * Self::NB_LIMBS - 2;
 
@@ -40,6 +41,7 @@ impl FieldParameters for Bn254BaseField {
 
 impl EllipticCurveParameters for Bn254Parameters {
     type BaseField = Bn254BaseField;
+    const NAME: &'static str = "bn254";
 }
 
 impl WeierstrassParameters for Bn254Parameters {

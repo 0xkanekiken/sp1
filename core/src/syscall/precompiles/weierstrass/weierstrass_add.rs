@@ -152,7 +152,11 @@ impl<F: PrimeField32, E: EllipticCurve + WeierstrassParameters> MachineAir<F>
     type Record = ExecutionRecord;
 
     fn name(&self) -> String {
-        "WeierstrassAddAssign".to_string()
+        match E::NAME {
+            "secp256k1" => "Secp256k1AddAssign".to_string(),
+            "bn254" => "Bn254AddAssign".to_string(),
+            _ => panic!("Unsupported curve"),
+        }
     }
 
     fn generate_trace(
@@ -164,8 +168,13 @@ impl<F: PrimeField32, E: EllipticCurve + WeierstrassParameters> MachineAir<F>
 
         let mut new_field_events = Vec::new();
 
-        for i in 0..input.weierstrass_add_events.len() {
-            let event = input.weierstrass_add_events[i].clone();
+        let events = match E::NAME {
+            "secp256k1" => &input.secp256k1_add_events,
+            "bn254" => &input.bn254_add_events,
+            _ => panic!("Unsupported curve"),
+        };
+        for i in 0..events.len() {
+            let event = events[i].clone();
             let mut row = [F::zero(); NUM_WEIERSTRASS_ADD_COLS];
             let cols: &mut WeierstrassAddAssignCols<F> = row.as_mut_slice().borrow_mut();
 
@@ -216,7 +225,11 @@ impl<F: PrimeField32, E: EllipticCurve + WeierstrassParameters> MachineAir<F>
     }
 
     fn included(&self, shard: &Self::Record) -> bool {
-        !shard.weierstrass_add_events.is_empty()
+        match E::NAME {
+            "secp256k1" => !shard.secp256k1_add_events.is_empty(),
+            "bn254" => !shard.bn254_add_events.is_empty(),
+            _ => panic!("Unsupported curve"),
+        }
     }
 }
 
@@ -292,7 +305,7 @@ where
             row.x3_ins.result
         };
 
-        // y = slope * (p.x - x_3n) - q.y.
+        // y = slope * (p.x - x_3n) - p.y.
         {
             row.p_x_minus_x
                 .eval::<AB, E::BaseField, _, _>(builder, &p_x, &x, FieldOperation::Sub);
@@ -351,13 +364,23 @@ where
 mod tests {
     use crate::{
         runtime::Program,
-        utils::{run_test, setup_logger, tests::SECP256K1_ADD_ELF},
+        utils::{
+            run_test, setup_logger,
+            tests::{BN254_ADD_ELF, SECP256K1_ADD_ELF},
+        },
     };
 
     #[test]
     fn test_secp256k1_add_simple() {
         setup_logger();
         let program = Program::from(SECP256K1_ADD_ELF);
+        run_test(program).unwrap();
+    }
+
+    #[test]
+    fn test_bn254_add_simple() {
+        setup_logger();
+        let program = Program::from(BN254_ADD_ELF);
         run_test(program).unwrap();
     }
 }
