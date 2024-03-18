@@ -68,7 +68,11 @@ pub struct WeierstrassAddAssignChip<E> {
 impl<E: EllipticCurve> Syscall for WeierstrassAddAssignChip<E> {
     fn execute(&self, rt: &mut SyscallContext) -> u32 {
         let event = create_ec_add_event::<E>(rt);
-        rt.record_mut().weierstrass_add_events.push(event.clone());
+        match E::NAME {
+            "secp256k1" => rt.record_mut().secp256k1_add_events.push(event.clone()),
+            "bn254" => rt.record_mut().bn254_add_events.push(event.clone()),
+            _ => panic!("Unsupported curve"),
+        }
         event.p_ptr + 1
     }
 

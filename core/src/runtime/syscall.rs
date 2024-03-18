@@ -14,7 +14,7 @@ use crate::syscall::{
     SyscallEnterUnconstrained, SyscallExitUnconstrained, SyscallHalt, SyscallLWA, SyscallWrite,
 };
 use crate::utils::ec::edwards::ed25519::{Ed25519, Ed25519Parameters};
-use crate::utils::ec::weierstrass::secp256k1::Secp256k1;
+use crate::utils::ec::weierstrass::{bn254::Bn254, secp256k1::Secp256k1};
 use crate::{runtime::ExecutionRecord, runtime::MemoryReadRecord, runtime::MemoryWriteRecord};
 
 /// A system call is invoked by the the `ecall` instruction with a specific value in register t0.
@@ -60,6 +60,12 @@ pub enum SyscallCode {
     /// Executes the `BLAKE3_COMPRESS_INNER` precompile.
     BLAKE3_COMPRESS_INNER = 112,
 
+    /// Executes the `BN254_ADD` precompile.
+    BN254_ADD = 113,
+
+    /// Executes the `BN254_DOUBLE` precompile.
+    BN254_DOUBLE = 114,
+
     WRITE = 999,
 }
 
@@ -80,6 +86,8 @@ impl SyscallCode {
             110 => SyscallCode::ENTER_UNCONSTRAINED,
             111 => SyscallCode::EXIT_UNCONSTRAINED,
             112 => SyscallCode::BLAKE3_COMPRESS_INNER,
+            113 => SyscallCode::BN254_ADD,
+            114 => SyscallCode::BN254_DOUBLE,
             999 => SyscallCode::WRITE,
             _ => panic!("invalid syscall number: {}", value),
         }
@@ -224,6 +232,14 @@ pub fn default_syscall_map() -> HashMap<SyscallCode, Rc<dyn Syscall>> {
     syscall_map.insert(
         SyscallCode::EXIT_UNCONSTRAINED,
         Rc::new(SyscallExitUnconstrained::new()),
+    );
+    syscall_map.insert(
+        SyscallCode::BN254_ADD,
+        Rc::new(WeierstrassAddAssignChip::<Bn254>::new()),
+    );
+    syscall_map.insert(
+        SyscallCode::BN254_DOUBLE,
+        Rc::new(WeierstrassDoubleAssignChip::<Bn254>::new()),
     );
     syscall_map.insert(SyscallCode::WRITE, Rc::new(SyscallWrite::new()));
 
