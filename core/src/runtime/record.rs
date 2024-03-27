@@ -17,6 +17,8 @@ use crate::syscall::precompiles::k256::K256DecompressEvent;
 use crate::syscall::precompiles::keccak256::KeccakPermuteEvent;
 use crate::syscall::precompiles::sha256::{ShaCompressEvent, ShaExtendEvent};
 use crate::syscall::precompiles::{ECAddEvent, ECDoubleEvent};
+use crate::utils::ec::edwards::ed25519::Ed25519;
+use crate::utils::ec::weierstrass::secp256k1::Secp256k1;
 use crate::utils::env;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
@@ -67,11 +69,11 @@ pub struct ExecutionRecord {
 
     pub keccak_permute_events: Vec<KeccakPermuteEvent>,
 
-    pub ed_add_events: Vec<ECAddEvent>,
+    pub ed_add_events: Vec<ECAddEvent<Ed25519>>,
 
     pub ed_decompress_events: Vec<EdDecompressEvent>,
 
-    pub weierstrass_add_events: Vec<ECAddEvent>,
+    pub weierstrass_add_events: Vec<ECAddEvent<Secp256k1>>,
 
     pub weierstrass_double_events: Vec<ECDoubleEvent>,
 

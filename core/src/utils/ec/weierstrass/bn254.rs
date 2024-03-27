@@ -6,6 +6,7 @@ use typenum::{U32, U62};
 use super::{SwCurve, WeierstrassParameters};
 use crate::utils::ec::field::FieldParameters;
 use crate::utils::ec::field::NumLimbs;
+use crate::utils::ec::CurveType;
 use crate::utils::ec::EllipticCurveParameters;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -24,7 +25,7 @@ impl FieldParameters for Bn254BaseField {
         129, 182, 69, 80, 184, 41, 160, 49, 225, 114, 78, 100, 48,
     ];
 
-    const WITNESS_OFFSET: usize = 1usize << 20;
+    const WITNESS_OFFSET: usize = 1usize << 13;
 
     fn modulus() -> BigUint {
         BigUint::from_str_radix(
@@ -42,6 +43,7 @@ impl NumLimbs for Bn254BaseField {
 
 impl EllipticCurveParameters for Bn254Parameters {
     type BaseField = Bn254BaseField;
+    const CURVE_TYPE: CurveType = CurveType::Bn254;
 }
 
 impl WeierstrassParameters for Bn254Parameters {

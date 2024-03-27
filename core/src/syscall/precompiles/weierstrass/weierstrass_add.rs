@@ -14,8 +14,10 @@ use crate::syscall::precompiles::SyscallContext;
 use crate::utils::ec::field::FieldParameters;
 use crate::utils::ec::field::NumLimbs;
 use crate::utils::ec::field::NumWords;
+use crate::utils::ec::weierstrass::secp256k1::Secp256k1;
 use crate::utils::ec::weierstrass::WeierstrassParameters;
 use crate::utils::ec::AffinePoint;
+use crate::utils::ec::CurveType;
 use crate::utils::ec::EllipticCurve;
 use crate::utils::limbs_from_prev_access;
 use crate::utils::pad_rows;
@@ -71,8 +73,14 @@ pub struct WeierstrassAddAssignChip<E> {
 
 impl<E: EllipticCurve> Syscall for WeierstrassAddAssignChip<E> {
     fn execute(&self, rt: &mut SyscallContext, arg1: u32, arg2: u32) -> Option<u32> {
-        let event = create_ec_add_event::<E>(rt, arg1, arg2);
-        rt.record_mut().weierstrass_add_events.push(event);
+        match E::CURVE_TYPE {
+            CurveType::Secp256k1 => {
+                let event = create_ec_add_event::<Secp256k1>(rt, arg1, arg2);
+                rt.record_mut().weierstrass_add_events.push(event);
+            }
+            CurveType::Bn254 => {}
+            _ => panic!("Unsupported curve"),
+        }
         None
     }
 
@@ -150,6 +158,12 @@ where
         input: &ExecutionRecord,
         output: &mut ExecutionRecord,
     ) -> RowMajorMatrix<F> {
+        let events = match E::CURVE_TYPE {
+            CurveType::Secp256k1 => &input.weierstrass_add_events,
+            // CurveType::Bn254 => {}
+            _ => panic!("Unsupported curve"),
+        };
+
         let mut rows = Vec::new();
 
         let mut new_byte_lookup_events = Vec::new();
